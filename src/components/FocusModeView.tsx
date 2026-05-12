@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react'
 import { Button } from './ui/button'
 import { Card, CardContent } from './ui/card'
-import { BookOpen, X, Clock, CheckCircle } from 'lucide-react'
+import { BookOpen, Clock, CheckCircle } from 'lucide-react'
 import type { Book } from '@/types'
 
 type FocusModeViewProps = {
-  session: any;
+  
   library: Book[];
   onExit: () => void;
   onSaveSession: (bookId: string, durationSeconds: number, previousPage: number, newPage: number) => Promise<void>;
 }
 
-export function FocusModeView({ session, library, onExit, onSaveSession }: FocusModeViewProps) {
+export function FocusModeView({ library, onExit, onSaveSession }: FocusModeViewProps) {
   const [step, setStep] = useState<'setup' | 'running' | 'completed'>('setup')
   const [targetMinutes, setTargetMinutes] = useState(30)
   const [timeLeft, setTimeLeft] = useState(0)

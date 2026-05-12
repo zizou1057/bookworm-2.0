@@ -557,7 +557,7 @@ function LibraryView({ library, onSelectBook }: { library: Book[], onSelectBook:
                         <span className="font-semibold text-primary">{book.progressPercent}%</span>
                         <span className="text-[10px]">{book.readPages} / {book.pages}p</span>
                       </div>
-                      <Progress value={book.progressPercent} className="h-1.5" indicatorClassName="bg-primary" />
+                      <Progress value={book.progressPercent ?? null} className="h-1.5" indicatorClassName="bg-primary" />
                     </>
                   )}
 
@@ -594,7 +594,8 @@ function BookDetailView({
   onSelectGroup,
   onSelectGenre,
   onAddBookToGroups,
-  onDeleteBook
+  onDeleteBook,
+  session
 }: {
   bookId: string;
   library: Book[];
@@ -1551,7 +1552,7 @@ function GroupDetailView({
                           <span className="font-semibold text-primary">{book.progressPercent}%</span>
                           <span className="text-[10px]">{book.readPages} / {book.pages}p</span>
                         </div>
-                        <Progress value={book.progressPercent} className="h-1.5" indicatorClassName="bg-primary" />
+                        <Progress value={book.progressPercent ?? null} className="h-1.5" indicatorClassName="bg-primary" />
                       </>
                     )}
 
@@ -1668,7 +1669,7 @@ function GenreDetailView({ genre, library, onSelectBook, onBack }: { genre: stri
                       <span>{book.progressPercent}%</span>
                       <span>{book.readPages} / {book.pages}p</span>
                     </div>
-                    <Progress value={book.progressPercent} className="h-1.5" indicatorClassName="bg-primary" />
+                    <Progress value={book.progressPercent ?? null} className="h-1.5" indicatorClassName="bg-primary" />
                   </div>
                 )}
               </div>
@@ -1980,7 +1981,7 @@ export default function App() {
     // Persistir en Supabase: eliminar y reinsertar en orden
     await supabase.from('group_books').delete().eq('group_id', groupId);
     if (newBookIds.length > 0) {
-      const inserts = newBookIds.map((bookId, index) => ({
+      const inserts = newBookIds.map((bookId) => ({
         group_id: groupId,
         book_id: bookId
       }));
@@ -2057,7 +2058,6 @@ export default function App() {
   if (currentView === 'focusMode') {
     return (
       <FocusModeView 
-        session={session} 
         library={library} 
         onExit={() => setCurrentView('dashboard')} 
         onSaveSession={handleSaveFocusSession} 
