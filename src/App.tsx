@@ -215,7 +215,7 @@ function DailyTracker({ session }: { session: any }) {
         </div>
         <div className="flex-1 p-6 flex flex-col justify-center">
           <h2 className="text-xl font-heading tracking-tight font-bold text-gray-900 mb-4">¿Leíste hoy?</h2>
-          <div className="flex items-center space-x-4 mb-4">
+          <div className="flex items-center justify-between sm:justify-start sm:gap-4 w-full mb-4">
             {days.map((day, i) => (
               <div key={i} className="flex flex-col items-center space-y-2">
                 <span className="text-xs text-gray-500 font-medium">{day.label}</span>
@@ -436,7 +436,7 @@ function StatisticsView({ library }: { library: Book[] }) {
         </Card>
       </div>
 
-      <div className="grid grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Card className="border-none shadow-sm bg-white h-80 flex flex-col opacity-50">
           <CardHeader className="pb-2 border-b border-gray-50 flex flex-row items-center space-y-0 gap-2">
             <TrendingUp className="w-5 h-5 text-gray-400" />
@@ -467,7 +467,7 @@ function StatisticsView({ library }: { library: Book[] }) {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm bg-white h-80 flex flex-col col-span-2 opacity-50">
+        <Card className="border-none shadow-sm bg-white h-80 flex flex-col col-span-1 md:col-span-2 opacity-50">
           <CardHeader className="pb-2 border-b border-gray-50 flex flex-row items-center space-y-0 gap-2">
             <Clock className="w-5 h-5 text-gray-400" />
             <CardTitle className="text-lg font-bold text-gray-800">Días más productivos</CardTitle>
@@ -786,7 +786,7 @@ function BookDetailView({
 
                 <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
                   <h4 className="font-bold text-gray-900 mb-3 text-sm">Actualizar progreso</h4>
-                  <div className="flex gap-4 items-end">
+                  <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
                     <div className="flex-1 space-y-1">
                       <label className="text-[10px] font-bold text-gray-500 uppercase">¿En qué página te quedaste?</label>
                       <input
@@ -807,7 +807,7 @@ function BookDetailView({
                         className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-primary bg-white"
                       />
                     </div>
-                    <Button onClick={handleAddLog} className="bg-primary text-white hover:bg-primary/80 h-10">Guardar</Button>
+                    <Button onClick={handleAddLog} className="bg-primary text-white hover:bg-primary/80 h-10 w-full sm:w-auto mt-2 sm:mt-0">Guardar</Button>
                   </div>
                 </div>
 
@@ -1161,7 +1161,7 @@ function AddBookModal({ isOpen, onClose, onSave }: { isOpen: boolean, onClose: (
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Nombre</label>
               <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="Ej. Dune" />
@@ -1172,7 +1172,7 @@ function AddBookModal({ isOpen, onClose, onSave }: { isOpen: boolean, onClose: (
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Páginas</label>
               <input type="number" value={pages} onChange={e => setPages(e.target.value)} className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="Ej. 450" />
@@ -1183,7 +1183,7 @@ function AddBookModal({ isOpen, onClose, onSave }: { isOpen: boolean, onClose: (
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Fecha de Publicación</label>
               <input type="text" value={publishDate} onChange={e => setPublishDate(e.target.value)} className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white text-gray-700" placeholder="Ej. 1965-08" />
@@ -2085,18 +2085,18 @@ export default function App() {
       <div className="flex-1 flex flex-col h-full overflow-y-auto bg-white rounded-t-[2.5rem] md:rounded-t-none md:rounded-tl-[2.5rem] border-l border-t border-gray-200/50 shadow-sm ml-0 mt-2">
         <main className="flex-1 flex justify-center p-4 pb-24 md:p-8 md:pb-12 md:pt-6">
           <div className="max-w-7xl w-full">
-            <div className="flex items-center mb-8">
+            <div className="flex items-center justify-end mb-8">
               <Button onClick={() => setIsAddModalOpen(true)} className="bg-primary text-white hover:bg-primary/80 font-semibold h-12 px-8 text-base rounded-full shadow-sm">
                 <PlusCircle className="mr-2.5 h-5 w-5" />
                 Añadir Libro
               </Button>
             </div>
-            <div className="flex gap-10 w-full">
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 w-full">
 
               {currentView === 'dashboard' && (
                 <>
-                  <div className="flex-1">
-                    <div className="grid flex flex-col md:grid md:grid-cols-[1fr_320px] gap-6 mb-8">
+                  <div className="flex-1 w-full min-w-0">
+                    <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6 mb-8">
                       <DailyTracker session={session} />
                       <FocusModeWidget focusSessions={focusSessions} onStart={() => setCurrentView('focusMode')} />
                     </div>
@@ -2147,7 +2147,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="w-80 space-y-6">
+                  <div className="w-full lg:w-80 flex-shrink-0 space-y-6">
                     <ReadingGoalsWidget session={session} library={library} />
 
                     <StatisticsWidget library={library} />
