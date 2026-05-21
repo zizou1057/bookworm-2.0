@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import type { Book, BookStatus, Group, GroupType } from "@/types"
 import { supabase } from "./lib/supabase"
-import { BookOpen, Search, PlusCircle, Library, CheckCircle2, Circle, BarChart3, Calendar, TrendingUp, Star, Clock, X, LayoutGrid, ChevronUp, ChevronDown, ArrowUpDown, GripVertical, Trash2, AlertTriangle, Glasses, LogOut, Settings, User, SlidersHorizontal } from "lucide-react"
+import { BookOpen, Search, PlusCircle, Library, CheckCircle2, Circle, BarChart3, Calendar, TrendingUp, Star, Clock, X, LayoutGrid, ChevronUp, ChevronDown, ArrowUpDown, GripVertical, Trash2, AlertTriangle, Glasses, LogOut, Settings, User, SlidersHorizontal, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
