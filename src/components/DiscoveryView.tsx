@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search, Sparkles, BookOpen, PlusCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Sparkles, BookOpen, PlusCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,16 @@ export function DiscoveryView({ library, onAddBook }: DiscoveryViewProps) {
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<RecommendedBook[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('bookworm_search_history');
+    if (saved) {
+      try {
+        setRecentSearches(JSON.parse(saved));
+      } catch (e) {}
+    }
+  }, []);
 
   const extractUserProfile = () => {
     // Extraer géneros top
@@ -42,15 +52,25 @@ export function DiscoveryView({ library, onAddBook }: DiscoveryViewProps) {
     return `Mis géneros favoritos son: ${topGenres.join(', ')}.`;
   };
 
-  const fetchRecommendations = async () => {
+  const fetchRecommendations = async (searchQuery: string = query) => {
+    if (!searchQuery.trim() && !query.trim()) return;
+    const finalQuery = searchQuery || query;
+    if (searchQuery) setQuery(searchQuery);
+
     setLoading(true);
     setError(null);
     setRecommendations([]);
 
+    if (finalQuery.trim()) {
+      const newHistory = [finalQuery, ...recentSearches.filter(q => q !== finalQuery)].slice(0, 5);
+      setRecentSearches(newHistory);
+      localStorage.setItem('bookworm_search_history', JSON.stringify(newHistory));
+    }
+
     try {
       const userProfile = extractUserProfile();
       const prompt = `Actúa como un recomendador experto de libros. ${userProfile} 
-El usuario también dijo: "${query}".
+El usuario también dijo: "${finalQuery}".
 Recomienda exactamente 3 libros distintos. 
 DEBES devolver ÚNICAMENTE un objeto JSON con la propiedad "recommendations" que contenga un arreglo con este formato exacto:
 {
@@ -89,7 +109,8 @@ No agregues texto antes ni después del JSON.`;
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(`Error de la IA: ${errData.error?.message || res.statusText || 'Desconocido'}`);
+        const errorMessage = errData.error?.message || errData.message || res.statusText || 'Desconocido';
+        throw new Error(`Error de la IA: ${errorMessage}`);
       }
       
       const data = await res.json();
@@ -145,7 +166,7 @@ No agregues texto antes ni después del JSON.`;
       author: book.author,
       pages: book.pages || 0,
       coverUrl: book.coverUrl || '',
-      status: 'unread',
+      status: 'wishlist',
       genres: []
     });
     // Opcional: mostrar notificación o quitar la tarjeta
@@ -160,25 +181,39 @@ No agregues texto antes ni después del JSON.`;
         <p className="text-gray-500">Nuestra IA analiza tu biblioteca y tus gustos para encontrar tu próxima gran lectura.</p>
       </div>
 
-      <div className="bg-white p-6 rounded-3xl shadow-sm mb-10 flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ej. 'Quiero una novela de misterio espacial' o déjalo vacío para usar tus favoritos..."
-            className="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:border-[#00BFB3] focus:ring-2 focus:ring-[#00BFB3]/20 outline-none transition-all text-sm font-medium"
-            onKeyDown={(e) => e.key === 'Enter' && fetchRecommendations()}
-          />
+      <div className="bg-white p-6 rounded-3xl shadow-sm mb-10 flex flex-col gap-4">
+        <div className="flex gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Ej. 'Quiero una novela de misterio espacial' o déjalo vacío para usar tus favoritos..."
+              className="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:border-[#00BFB3] focus:ring-2 focus:ring-[#00BFB3]/20 outline-none transition-all text-sm font-medium"
+              onKeyDown={(e) => e.key === 'Enter' && fetchRecommendations()}
+            />
+          </div>
+          <Button 
+            onClick={() => fetchRecommendations()}
+            disabled={loading}
+            className="bg-[#00BFB3] hover:bg-[#009F95] text-white py-4 px-8 h-auto rounded-xl font-bold shadow-md shadow-[#00BFB3]/20 transition-all"
+          >
+            {loading ? 'Pensando...' : 'Descubrir'}
+          </Button>
         </div>
-        <Button 
-          onClick={fetchRecommendations}
-          disabled={loading}
-          className="bg-[#00BFB3] hover:bg-[#009F95] text-white py-4 px-8 h-auto rounded-xl font-bold shadow-md shadow-[#00BFB3]/20 transition-all"
-        >
-          {loading ? 'Pensando...' : 'Descubrir'}
-        </Button>
+        {!loading && recommendations.length === 0 && recentSearches.length > 0 && (
+          <div className="flex flex-col gap-2 mt-2 animate-in fade-in">
+            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Búsquedas recientes</h4>
+            <div className="flex flex-wrap gap-2">
+              {recentSearches.map((s, i) => (
+                <button key={i} onClick={() => fetchRecommendations(s)} className="text-sm px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg border border-gray-100 transition-colors">
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -236,6 +271,19 @@ No agregues texto antes ni después del JSON.`;
         <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
           <BookOpen className="w-16 h-16 mb-4 text-gray-200" />
           <p className="font-medium text-gray-500">Las recomendaciones aparecerán aquí.</p>
+        </div>
+      )}
+
+      {!loading && recommendations.length > 0 && recentSearches.length > 0 && (
+        <div className="flex flex-col gap-2 mt-10 animate-in fade-in">
+          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Búsquedas recientes</h4>
+          <div className="flex flex-wrap gap-2">
+            {recentSearches.map((s, i) => (
+              <button key={i} onClick={() => fetchRecommendations(s)} className="text-sm px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg border border-gray-100 transition-colors">
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

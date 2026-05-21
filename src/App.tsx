@@ -69,6 +69,16 @@ function Sidebar({ currentView, setCurrentView, userProfile }: { currentView: st
             </div>
           )}
         </div>
+
+        <div className="pt-6 mt-2">
+          <button
+            onClick={() => setCurrentView('focusMode')}
+            className="w-full flex items-center justify-center px-4 py-3 rounded-2xl transition-all shadow-md font-bold bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <Clock className="mr-3 h-[20px] w-[20px] stroke-[2.5]" />
+            Focus Mode
+          </button>
+        </div>
       </nav>
 
       <div className="p-4 mt-auto mb-4 border-t border-gray-200/50 relative">
@@ -488,8 +498,13 @@ function StatisticsView({ library }: { library: Book[] }) {
 function LibraryView({ library, onSelectBook }: { library: Book[], onSelectBook: (id: string) => void }) {
   const [sortBy, setSortBy] = useState('added');
   const [filter, setFilter] = useState('all');
+  const [viewMode, setViewMode] = useState<'main' | 'wishlist'>('main');
 
-  let filteredBooks = library.filter(b => filter === 'all' ? true : b.status === filter);
+  let filteredBooks = library.filter(b => {
+    if (viewMode === 'wishlist') return b.status === 'wishlist';
+    if (b.status === 'wishlist') return false;
+    return filter === 'all' ? true : b.status === filter;
+  });
 
   filteredBooks = [...filteredBooks].sort((a, b) => {
     if (sortBy === 'alphabetical') return a.title.localeCompare(b.title);
@@ -500,17 +515,30 @@ function LibraryView({ library, onSelectBook }: { library: Book[], onSelectBook:
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex justify-between items-end mb-8">
-        <h2 className="text-3xl font-heading tracking-tight font-bold text-gray-900">Mi Biblioteca</h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-3xl font-heading tracking-tight font-bold text-gray-900">
+            {viewMode === 'wishlist' ? 'Lista de Deseos' : 'Mi Biblioteca'}
+          </h2>
+          <Button 
+            onClick={() => setViewMode(viewMode === 'main' ? 'wishlist' : 'main')} 
+            variant="outline" 
+            className="bg-white border-gray-200 text-gray-500 hover:bg-gray-50 shadow-sm"
+          >
+            {viewMode === 'main' ? 'Ver Lista de Deseos' : 'Volver a Biblioteca'}
+          </Button>
+        </div>
         <div className="flex gap-4">
-          <select
-            value={filter}
-            onChange={e => setFilter(e.target.value)}
-            className="text-sm font-semibold border border-gray-200 bg-white shadow-sm rounded-lg px-4 py-2 text-gray-700 outline-none cursor-pointer">
-            <option value="all">Todas las categorías</option>
-            <option value="unread">Por leer</option>
-            <option value="reading">Leyendo</option>
-            <option value="read">Leídos</option>
-          </select>
+          {viewMode === 'main' && (
+            <select
+              value={filter}
+              onChange={e => setFilter(e.target.value)}
+              className="text-sm font-semibold border border-gray-200 bg-white shadow-sm rounded-lg px-4 py-2 text-gray-700 outline-none cursor-pointer">
+              <option value="all">Todas las categorías</option>
+              <option value="unread">Por leer</option>
+              <option value="reading">Leyendo</option>
+              <option value="read">Leídos</option>
+            </select>
+          )}
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}
@@ -619,6 +647,16 @@ function BookDetailView({
   const [logDate, setLogDate] = useState(new Date().toISOString().split('T')[0]);
   const [newComment, setNewComment] = useState('');
 
+  const [wishlistPublishDate, setWishlistPublishDate] = useState('');
+  const [wishlistGenresText, setWishlistGenresText] = useState('');
+
+  useEffect(() => {
+    if (book) {
+      setWishlistPublishDate(book.publishDate || '');
+      setWishlistGenresText(book.genres?.join(', ') || '');
+    }
+  }, [book?.id]);
+
   useEffect(() => {
     if (!book) return;
     async function loadExtra() {
@@ -690,6 +728,15 @@ function BookDetailView({
     await onUpdateBook(book.id, updates);
   };
 
+  const handleSaveWishlistData = async () => {
+    const genresArray = wishlistGenresText.split(',').map(g => g.trim()).filter(Boolean);
+    await onUpdateBook(book.id, {
+      publishDate: wishlistPublishDate,
+      genres: genresArray,
+      status: 'unread'
+    });
+  };
+
   return (
     <div className="w-full animate-in fade-in duration-500">
       <AddToGroupModal
@@ -707,6 +754,54 @@ function BookDetailView({
         <ChevronDown className="w-4 h-4 mr-1 rotate-90" />
         Volver
       </button>
+
+      {book.status === 'wishlist' && (
+        <div className="bg-orange-50 border border-orange-200 p-6 rounded-2xl mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-4">
+            <div>
+              <h3 className="text-orange-800 font-bold text-lg mb-1 flex items-center gap-2">
+                <Sparkles className="w-5 h-5" /> Este libro está en tu Lista de Deseos
+              </h3>
+              <p className="text-orange-700 text-sm">Completa la información faltante para añadirlo definitivamente a tu biblioteca.</p>
+            </div>
+            <Button onClick={handleSaveWishlistData} className="bg-orange-600 hover:bg-orange-700 text-white font-bold whitespace-nowrap">
+              Mover a "Por Leer"
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white/60 p-4 rounded-xl border border-orange-100">
+            <div>
+              <label className="text-[10px] font-bold text-orange-600 uppercase mb-1 block">Año de Publicación</label>
+              <input 
+                type="text" 
+                placeholder="Ej. 2024"
+                value={wishlistPublishDate}
+                onChange={e => setWishlistPublishDate(e.target.value)}
+                className="w-full bg-white border border-orange-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-400 text-gray-900"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-orange-600 uppercase mb-1 block">Páginas</label>
+              <input 
+                type="number" 
+                placeholder="Ej. 300"
+                value={book.pages || ''}
+                onChange={e => onUpdateBook(book.id, { pages: parseInt(e.target.value) || 0 })}
+                className="w-full bg-white border border-orange-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-400 text-gray-900"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-orange-600 uppercase mb-1 block">Géneros (separados por coma)</label>
+              <input 
+                type="text" 
+                placeholder="Ej. Ciencia Ficción, Misterio"
+                value={wishlistGenresText}
+                onChange={e => setWishlistGenresText(e.target.value)}
+                className="w-full bg-white border border-orange-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-400 text-gray-900"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mb-8">
         <h1 className="text-2xl md:text-4xl font-heading tracking-tight font-bold text-gray-900">{book.title}</h1>
@@ -787,8 +882,10 @@ function BookDetailView({
                 <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
                   <h4 className="font-bold text-gray-900 mb-3 text-sm">Actualizar progreso</h4>
                   <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
-                    <div className="flex-1 space-y-1">
-                      <label className="text-[10px] font-bold text-gray-500 uppercase">¿En qué página te quedaste?</label>
+                    <div className="flex-1 space-y-1 min-w-0">
+                      <div className="overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                        <label className="text-[10px] font-bold text-gray-500 uppercase">¿En qué página te quedaste?</label>
+                      </div>
                       <input
                         type="number"
                         value={logPage}
@@ -798,7 +895,7 @@ function BookDetailView({
                         title="Ingresa el número de página en el que te encuentras ahora"
                       />
                     </div>
-                    <div className="flex-1 space-y-1">
+                    <div className="flex-1 space-y-1 min-w-0">
                       <label className="text-[10px] font-bold text-gray-500 uppercase">Fecha</label>
                       <input
                         type="date"
@@ -1038,12 +1135,18 @@ function AddToGroupModal({
   )
 }
 
-function AddBookModal({ isOpen, onClose, onSave }: { isOpen: boolean, onClose: () => void, onSave: (book: Partial<Book>) => void }) {
+function AddBookModal({ 
+  isOpen, onClose, onSave, categories = [], collections = [] 
+}: { 
+  isOpen: boolean, onClose: () => void, onSave: (book: Partial<Book>, groupId?: string) => void,
+  categories?: Group[], collections?: Group[] 
+}) {
   const [status, setStatus] = useState('unread');
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState('');
 
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
@@ -1106,8 +1209,8 @@ function AddBookModal({ isOpen, onClose, onSave }: { isOpen: boolean, onClose: (
       readPages: parseInt(readPages) || 0,
       startDate,
       endDate
-    });
-    setTitle(''); setAuthor(''); setPages(''); setGenres(''); setPublishDate(''); setCoverUrl(''); setReadPages(''); setStartDate(''); setEndDate(''); setStatus('unread'); setSearchQuery('');
+    }, selectedGroupId || undefined);
+    setTitle(''); setAuthor(''); setPages(''); setGenres(''); setPublishDate(''); setCoverUrl(''); setReadPages(''); setStartDate(''); setEndDate(''); setStatus('unread'); setSearchQuery(''); setSelectedGroupId('');
   };
 
   if (!isOpen) return null;
@@ -1187,6 +1290,22 @@ function AddBookModal({ isOpen, onClose, onSave }: { isOpen: boolean, onClose: (
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Fecha de Publicación</label>
               <input type="text" value={publishDate} onChange={e => setPublishDate(e.target.value)} className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white text-gray-700" placeholder="Ej. 1965-08" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Añadir a Grupo (Opcional)</label>
+              <select value={selectedGroupId} onChange={e => setSelectedGroupId(e.target.value)} className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white text-gray-700">
+                <option value="">Ninguno</option>
+                {categories.length > 0 && (
+                  <optgroup label="Categorías">
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </optgroup>
+                )}
+                {collections.length > 0 && (
+                  <optgroup label="Colecciones">
+                    {collections.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </optgroup>
+                )}
+              </select>
             </div>
           </div>
 
@@ -1712,6 +1831,7 @@ function BottomNav({ currentView, setCurrentView }: { currentView: string, setCu
 
 export default function App() {
   const [currentView, setCurrentView] = useState('dashboard');
+  const [previousView, setPreviousView] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isNewGroupModalOpen, setIsNewGroupModalOpen] = useState(false);
   const [newGroupType, setNewGroupType] = useState<GroupType>('category');
@@ -1760,7 +1880,7 @@ export default function App() {
           coverUrl: b.cover_url,
           addedAt: b.created_at,
           startDate: b.start_date,
-          endDate: b.end_date,
+          endDate: b.end_date ? b.end_date.split('T')[0] : null,
           rating: b.rating,
           genres: b.genres,
         }));
@@ -1799,7 +1919,7 @@ export default function App() {
     loadData();
   }, [session]);
 
-  const handleSaveNewBook = async (bookData: Partial<Book>) => {
+  const handleSaveNewBook = async (bookData: Partial<Book>, groupId?: string) => {
     const { data } = await supabase
       .from("books")
       .insert([{
@@ -1835,7 +1955,7 @@ export default function App() {
         addedAt: data.created_at,
         progressPercent: data.progress_percent,
         startDate: data.start_date,
-        endDate: data.end_date
+        endDate: data.end_date ? data.end_date.split('T')[0] : null
       };
       if (data.read_pages > 0 && data.status !== 'unread') {
         await supabase.from('daily_logs').insert({
@@ -1849,6 +1969,9 @@ export default function App() {
       }
 
       setLibrary([...library, newBook]);
+      if (groupId) {
+        await handleAddBookToGroups(data.id, [groupId]);
+      }
       setIsAddModalOpen(false);
     }
   };
@@ -1940,6 +2063,7 @@ export default function App() {
 
   const handleSelectBook = (id: string) => {
     setSelectedBookId(id);
+    setPreviousView(currentView);
     setCurrentView('bookDetail');
   };
 
@@ -2067,7 +2191,13 @@ export default function App() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-slate-50 text-gray-900 font-sans">
-      <AddBookModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSave={handleSaveNewBook} />
+      <AddBookModal 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)} 
+        onSave={handleSaveNewBook}
+        categories={categories}
+        collections={collections}
+      />
       <NewGroupModal
         isOpen={isNewGroupModalOpen}
         onClose={() => setIsNewGroupModalOpen(false)}
@@ -2180,7 +2310,7 @@ export default function App() {
                   categories={categories}
                   collections={collections}
                   session={session}
-                  onBack={() => { setCurrentView('library'); setSelectedBookId(null); }}
+                  onBack={() => { setCurrentView(previousView || 'library'); setSelectedBookId(null); setPreviousView(null); }}
                   onUpdateBook={handleUpdateBook}
                   onSelectGroup={handleSelectGroup}
                   onSelectGenre={handleSelectGenre}
