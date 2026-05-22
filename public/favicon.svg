@@ -1,21 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
-  <!-- Background circle -->
-  <rect width="48" height="48" rx="12" fill="#00BFB3"/>
-  <!-- Open book icon -->
-  <g transform="translate(6, 10)">
-    <!-- Left page -->
-    <path d="M18 6 C18 6 10 5 4 8 L4 30 C10 27 18 28 18 28 L18 6Z" fill="white" opacity="0.95"/>
-    <!-- Right page -->
-    <path d="M18 6 C18 6 26 5 32 8 L32 30 C26 27 18 28 18 28 L18 6Z" fill="white" opacity="0.80"/>
-    <!-- Spine -->
-    <rect x="17" y="6" width="2" height="22" rx="1" fill="#00847e"/>
-    <!-- Lines on left page -->
-    <line x1="7" y1="13" x2="15" y2="12" stroke="#00BFB3" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
-    <line x1="7" y1="17" x2="15" y2="16" stroke="#00BFB3" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
-    <line x1="7" y1="21" x2="15" y2="20" stroke="#00BFB3" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
-    <!-- Lines on right page -->
-    <line x1="21" y1="12" x2="29" y2="13" stroke="#00BFB3" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
-    <line x1="21" y1="16" x2="29" y2="17" stroke="#00BFB3" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
-    <line x1="21" y1="20" x2="29" y2="21" stroke="#00BFB3" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="none">
+  <!-- Cursive lowercase "w" matching the Bookworm logo -->
+  <path d="
+    M 90,260
+    C 65,260 48,285 55,310
+    C 90,420 165,580 210,670
+    C 235,720 270,745 305,725
+    C 340,705 360,650 385,575
+    C 400,530 415,495 428,495
+    C 441,495 456,530 471,575
+    C 496,650 516,705 551,725
+    C 586,745 621,720 646,670
+    C 700,560 790,340 820,230
+    C 835,180 815,130 785,125
+    C 755,120 730,150 718,195
+    C 688,300 645,470 605,580
+    C 593,613 580,630 568,618
+    C 552,602 535,560 515,505
+    C 493,443 472,400 440,395
+    C 408,390 387,433 365,495
+    C 345,550 328,592 312,608
+    C 300,620 287,603 275,570
+    C 235,460 172,290 150,255
+    C 132,228 108,260 90,260 Z
+  " fill="#00BFB3"/>
 </svg>
