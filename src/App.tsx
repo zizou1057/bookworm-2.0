@@ -1852,6 +1852,10 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoadingSession(false);
+    }).catch((err) => {
+      console.error("Error al obtener la sesión de Supabase:", err);
+      // Forzar a dejar de cargar para mostrar la UI (que posiblemente falle por falta de auth, pero mejor que pantalla infinita)
+      setLoadingSession(false);
     });
 
     const {
